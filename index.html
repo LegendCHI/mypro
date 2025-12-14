@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tu IP pública</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      margin: 0; padding: 2rem; min-height: 100vh;
+      display: grid; place-items: center;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, Arial, "Noto Sans", sans-serif;
+      background: radial-gradient(1000px 500px at 10% 10%, #eef3ff 0%, transparent 60%);
+    }
+    .card {
+      width: 100%; max-width: 720px;
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 16px;
+      padding: 1.5rem;
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(6px);
+    }
+    h1 { margin: 0 0 0.5rem; font-size: 1.8rem; }
+    p { margin: 0.25rem 0 1rem; color: #555; }
+    .ip {
+      font-size: 2.25rem;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.02em;
+    }
+    .row { display: flex; gap: 0.5rem; align-items: center; }
+    button {
+      padding: 0.6rem 1rem; border-radius: 10px;
+      border: 1px solid rgba(0,0,0,0.12); background: #fff; cursor: pointer;
+    }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    .error { color: #b00020; margin-top: 0.5rem; min-height: 1.2em; }
+    code { background: rgba(0,0,0,0.06); padding: 0.2rem 0.35rem; border-radius: 6px; }
+    .meta { margin-top: 1rem; font-size: 0.95rem; color: #666; }
+  </style>
+</head>
+<body>
+  <main class="card" role="main" aria-labelledby="title">
+    <h1 id="title">Tu dirección IP pública</h1>
+    <p>Se obtiene desde el navegador y se muestra sin guardar ni rastrear.</p>
+
+    <div class="row">
+      <div class="ip" id="ip" aria-live="polite">Cargando…</div>
+      <button id="refresh" aria-label="Actualizar IP">Actualizar</button>
+      <button id="copy" aria-label="Copiar IP">Copiar</button>
+    </div>
+
+    <div class="error" id="error" aria-live="polite"></div>
+
+    <div class="meta">
+      <p><strong>Nota:</strong> La IP “pública” puede estar detrás de NAT o un proxy. Para ver IP del cliente y cabeceras como <code>X-Forwarded-For</code> necesitas un servidor.</p>
+      <p style="font-size:0.9rem; color:#777;">
+        <!-- Descomenta y ajusta la URL si decides registrar en tu backend
+        La página enviará la IP al servidor solo cuando lo actives. -->
+        <!--
+        Al registrar: se hará POST a tu endpoint, por ejemplo:
+        fetch('https://tu-servidor/log', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ip }) })
+        -->
+      </p>
+    </div>
+  </main>
+
+  <script>
+    async function fetchIP() {
+      const ipEl = document.getElementById('ip');
+      const errEl = document.getElementById('error');
+      const btnRefresh = document.getElementById('refresh');
+
+      ipEl.textContent = 'Cargando…';
+      errEl.textContent = '';
+      btnRefresh.disabled = true;
+
+      try {
+        // Obtiene la IP pública en formato JSON
+        const res = await fetch('https://api.ipify.org?format=json', { cache: 'no-store' });
+        if (!res.ok) throw new Error('No se pudo obtener la IP');
+        const data = await res.json();
+        const ip = data.ip || 'No disponible';
+        ipEl.textContent = ip;
+
+        // Opcional: envía la IP a tu backend (si decides registrarla)
+        // await fetch('https://tu-servidor/log', {
+        //   method: 'POST',
+        //   headers: { 'Content-Type': 'application/json' },
+        //   body: JSON.stringify({ ip })
+        // });
+
+      } catch (e) {
+        ipEl.textContent = '—';
+        errEl.textContent = 'Error al obtener tu IP. Verifica conexión o bloqueadores.';
+      } finally {
+        btnRefresh.disabled = false;
+      }
+    }
+
+    document.getElementById('refresh').addEventListener('click', fetchIP);
+    document.getElementById('copy').addEventListener('click', async () => {
+      const ip = document.getElementById('ip').textContent.trim();
+      const errEl = document.getElementById('error');
+      try {
+        await navigator.clipboard.writeText(ip);
+        errEl.style.color = '#2e7d32';
+        errEl.textContent = 'IP copiada al portapapeles.';
+        setTimeout(() => { errEl.textContent = ''; errEl.style.color = '#b00020'; }, 1500);
+      } catch {
+        errEl.textContent = 'No se pudo copiar. Copia manualmente.';
+      }
+    });
+
+    fetchIP();
+  </script>
+</body>
+</html>
