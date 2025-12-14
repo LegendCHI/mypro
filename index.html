@@ -41,7 +41,7 @@
 <body>
   <main class="card" role="main" aria-labelledby="title">
     <h1 id="title">Tu dirección IP pública</h1>
-    <p>Se obtiene desde el navegador y se muestra sin guardar ni rastrear.</p>
+    <p>Se obtiene desde el navegador y se muestra aquí.</p>
 
     <div class="row">
       <div class="ip" id="ip" aria-live="polite">Cargando…</div>
@@ -52,15 +52,7 @@
     <div class="error" id="error" aria-live="polite"></div>
 
     <div class="meta">
-      <p><strong>Nota:</strong> La IP “pública” puede estar detrás de NAT o un proxy. Para ver IP del cliente y cabeceras como <code>X-Forwarded-For</code> necesitas un servidor.</p>
-      <p style="font-size:0.9rem; color:#777;">
-        <!-- Descomenta y ajusta la URL si decides registrar en tu backend
-        La página enviará la IP al servidor solo cuando lo actives. -->
-        <!--
-        Al registrar: se hará POST a tu endpoint, por ejemplo:
-        fetch('https://tu-servidor/log', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ip }) })
-        -->
-      </p>
+      <p><strong>Nota:</strong> La IP “pública” puede estar detrás de NAT o un proxy. Para ver IPs de visitantes necesitas un backend.</p>
     </div>
   </main>
 
@@ -82,16 +74,16 @@
         const ip = data.ip || 'No disponible';
         ipEl.textContent = ip;
 
-        // Opcional: envía la IP a tu backend (si decides registrarla)
-        // await fetch('https://tu-servidor/log', {
-        //   method: 'POST',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify({ ip })
-        // });
+        // Enviar la IP al backend en Render/Glitch
+        await fetch('https://mypro-en4m.onrender.com', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ip })
+        });
 
       } catch (e) {
         ipEl.textContent = '—';
-        errEl.textContent = 'Error al obtener tu IP. Verifica conexión o bloqueadores.';
+        errEl.textContent = 'Error al obtener tu IP o al enviar al servidor.';
       } finally {
         btnRefresh.disabled = false;
       }
