@@ -16,4 +16,8 @@ app.get('/ips', (req, res) => {
   res.type('text/plain').send(data);
 });
 
+app.get('/', (req, res) => {
+  res.send('Backend funcionando en Render 🚀');
+});
+
 app.listen(process.env.PORT || 3000, () => console.log('Servidor activo'));
