@@ -67,15 +67,14 @@
       btnRefresh.disabled = true;
 
       try {
-        // Obtiene la IP pública en formato JSON
         const res = await fetch('https://api.ipify.org?format=json', { cache: 'no-store' });
         if (!res.ok) throw new Error('No se pudo obtener la IP');
         const data = await res.json();
         const ip = data.ip || 'No disponible';
         ipEl.textContent = ip;
 
-        // Enviar la IP al backend en Render/Glitch
-        await fetch('https://mypro-en4m.onrender.com', {
+        // Enviar la IP al backend en Render
+        await fetch('https://mypro-en4m.onrender.com/log', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ip })
